@@ -4,8 +4,8 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of MsBackendMzVault is to provide an `MsBackend` to access MzVault libraries.
-MzVault is trademark of Thermo Scientific. 
+The goal of MsBackendMzVault is to provide an `MsBackend` to access mzVault libraries.
+mzVault is trademark of Thermo Scientific. 
 
 ## Installation
 
