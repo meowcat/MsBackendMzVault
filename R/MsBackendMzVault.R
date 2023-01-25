@@ -32,7 +32,7 @@ setMethod("backendInitialize",
 setMethod("length",
           "MsBackendMzVault",
           function(x) {
-            0
+            get_filtered_spectrumtable_count(x)
           })
 
 #' Report data storage to be the source SQLite database
