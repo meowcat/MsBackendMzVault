@@ -101,3 +101,50 @@ test_that("Processing the column mapping works",  {
   )
 
 })
+
+test_that("replacing NaN with NA works", {
+  x1 <- c(1,2,NaN,3,4)
+
+  y1 <- fast_replace_nan(x1)
+
+  expect_equal(
+    y1,
+    c(1,2,NA,3,4)
+  )
+})
+
+
+test_that("parsing collision energies works", {
+
+  ce <- c("35% (nominal)", "60 % (nominal)", "85% (nominal)",
+    "20% (nominal)",  "50 eV", "45 (nominal)", "90 % (nominal)",
+    "20% (nominal)", "CE30",  "10 eV", "25% (nominal)", "45 eV",
+    "15 % (nominal)", "45 % (nominal)",  "CE75",  "Ramp 17.4-26.1 eV",
+    NA, "gugus", "")
+
+  ce_parsed <- c(35, 60, 85, 20, 50, 45, 90, 20, 30, 10,
+                 25, 45, 15, 45, 75,  21.75, NA, NA, NA)
+
+  expect_equal(
+    mzvault_read_collisionenergy(ce),
+    ce_parsed
+  )
+})
+
+
+
+test_that("parsing polarities works", {
+
+  polarities <- c(
+    "P", "p", "POSITIVE", "+", "1", "positive", "POS", "pos",
+    "neg", "0", "-1", "negative", "NEG", NA
+  )
+  polarities_parsed <- c(
+    1L,1L,1L,1L,1L,1L,1L,1L,0L,0L,0L,0L,0L,NA_integer_
+  )
+
+  expect_equal(
+    mzvault_read_polarity(polarities),
+    polarities_parsed
+  )
+})

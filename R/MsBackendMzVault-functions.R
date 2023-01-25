@@ -52,7 +52,52 @@ get_filtered_spectrumtable_count <- function(object) {
 
 #' Map spectraVariables to data from mzVault
 #'
-#' This is a named list, where
+#'
+get_default_spectravariables_mapping <- function(object)
+  list(
+    msLevel,
+    rtime = "RetentionTime",
+    acquisitionNum = "SpectrumId",
+    scanIndex = "ScanNumber",
+    mz = list(
+      col = "blobMass",
+      read_fun = read_blobs_numericlist
+    ),
+    intensity = list(
+      col = "blobIntensity",
+      read_fun = read_blobs_numericlist
+    ),
+    #dataStorage,
+    #dataOrigin,
+    centroided = constant(TRUE),
+    smoothed = constant(FALSE),
+    polarity = list(
+      col = "Polarity",
+      fun = mzvault_read_polarity
+      ),
+    precScanNum = "CompoundId",
+    precursorMz = "PrecursorMass",
+    precursorIntensity = NA,
+    precursorCharge = NA,
+    collisionEnergy = list(
+      col = "CollisionEnergy",
+      read_fun = mzvault_read_collisionenergy
+    ),
+    isolationWindowLowerMz = list(
+      col = "PrecursorMass",
+      read_fun = ~ .x - object@implicitIsolationWidth / 2),
+    isolationWindowTargetMz = "PrecursorMass",
+    isolationWindowUpperMz = list(
+      col = "PrecursorMass",
+      read_fun = ~.x + object@implicitIsolationWidth / 2
+      )
+  )
+
+#' Load a spectraVariables mapping
+#'
+#' Loads a spectraVariables mapping definition and transforms shorthand notation
+#' into full definition. A mapping definition is a list, and for each element:
+#'
 #' * the name is the spectraVariable to be assigned
 #' * the value is a list with elements `list(col = "", fun = identity)`
 #'   where `col` is the source column and `read_fun` is a function transforming
@@ -68,37 +113,6 @@ get_filtered_spectrumtable_count <- function(object) {
 #' * It is typically used as `value`, resulting in
 #'  `list(col = acquisitionNum, read_fun = function(x) rep(v, length(x))`
 #' * The value `NA` represents `constant(NA)`
-#'
-#'
-#'
-get_default_spectravariables_mapping <- function(object)
-  list(
-    msLevel,
-    rtime = "RetentionTime",
-    acquisitionNum = "SpectrumId",
-    scanIndex = "ScanNumber",
-    #mz,
-    #intensity,
-    #dataStorage,
-    #dataOrigin,
-    centroided = constant(TRUE),
-    smoothed = constant(FALSE),
-    polarity = list(col = "Polarity", fun = mzvault_read_polarity),
-    precScanNum = "CompoundId",
-    precursorMz = "PrecursorMass",
-    precursorIntensity,
-    precursorCharge,
-    collisionEnergy,
-    isolationWindowLowerMz = list(
-      col = "PrecursorMass",
-      read_fun = ~ .x - object@implicitIsolationWidth / 2),
-    isolationWindowTargetMz = "PrecursorMass",
-    isolationWindowUpperMz = list(
-      col = "PrecursorMass",
-      read_fun = ~.x + object@implicitIsolationWidth / 2
-      )
-  )
-
 load_spectravariables_mapping <- function(
     object,
     mapping = get_default_spectravariables_mapping(object)) {
@@ -143,10 +157,58 @@ load_spectravariables_mapping <- function(
 }
 
 #' @export
-#' @describeIn spectravariables_mapping
+#' @describeIn load_spectravariables_mapping
 constant <- function(v) {
   function(.x) rep(v, length(.x))
 }
 
+#° Read collision energy from mzVault field
+#'
+#' Extract any number from the `CollisionEnergy` text field.
+#' If multiple are found, they are averaged (e.g. for "Ramp 33.3-44-4 eV")
+mzvault_read_collisionenergy <- function(x) {
+  stringr::str_match_all(x, "([0-9.]+)") |>
+    purrr::map(~ .x[,2]) |>
+    purrr::map(as.numeric) |>
+    purrr::map_dbl(~ mean(.x, na.rm=TRUE)) |>
+    fast_replace_nan()
+}
+
+#' Read polarity from mzVault field
+mzvault_read_polarity <- function(x) {
+  positive_tags <- c(
+    "P", "p", "POSITIVE", "+", "1", "positive", "POS", "pos"
+  )
+  purrr::map_lgl(
+    .x = x,
+    .f = ~ dplyr::if_else(
+      is.na(.x),
+      rlang::na_lgl,
+      .x %in% positive_tags
+    )
+  ) |>
+  as.integer()
+}
 
 
+#' Replace NaN
+#'
+#' @param x
+#' @param y replacement, typically `NA`
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+# x1 <- c(1,2,NaN,3,4)
+#
+# y1 <- fast_replace_nan(x1)
+#'
+#'
+fast_replace_nan <- function(data, replace = NA) {
+  stopifnot(length(replace) == 1)
+  stopifnot(is.numeric(data))
+  data[is.nan(data)] <- replace
+  data
+}
