@@ -30,6 +30,16 @@ get_filtered_spectrumtable <- function(object, filters = object@filters) {
 }
 
 
+#' Extend SpectrumTable by CompoundTable data
+join_compoundtable  <- function(tbl_spectrum, object) {
+  tbl_compounds <- dplyr::tbl(object@con, "CompoundTable")
+  tbl_joined <- tbl_spectrum |>
+    dplyr::left_join(tbl_compounds)
+  # print(tbl_joined |> dplyr::show_query())
+  tbl_joined
+}
+
+
 #' Get number of rows in filtered SpectrumTable
 #'
 get_filtered_spectrumtable_count <- function(object) {
@@ -40,50 +50,103 @@ get_filtered_spectrumtable_count <- function(object) {
 }
 
 
+#' Map spectraVariables to data from mzVault
+#'
+#' This is a named list, where
+#' * the name is the spectraVariable to be assigned
+#' * the value is a list with elements `list(col = "", fun = identity)`
+#'   where `col` is the source column and `read_fun` is a function transforming
+#'   the source data into the spectraVariable data.
+#'   Up to now we abstain from:
+#'   * backmapping for writing (TODO when writing is implemented)
+#'   * complex non-1:1 mapping as done in SpectraMapping (a non-goal).
+#' * If the value is a `character` instead of a `list`, it is interpreted as
+#'   `list(col = value, read_fun = identity)`
+#' * If the value is a `function` instead of a `list`, it is interpreted as
+#'   `list(col = "acquistionNum", read_fun = value)`
+#' * The `read_fun = constant(v)` represents `function(x) rep(v, length(x))`
+#' * It is typically used as `value`, resulting in
+#'  `list(col = acquisitionNum, read_fun = function(x) rep(v, length(x))`
+#' * The value `NA` represents `constant(NA)`
 #'
 #'
 #'
-#' purrr::reduce(.init = tbl_spectrz)
-#'
-#'
-#'
-#'
-#' sql_conditional_query <- function(query, where) {
-#'   if(length(where$vars) == 0)
-#'     return(query)
-#'   glue::glue("{query} WHERE {where$condition}")
-#' }
-#'
-#'
-#' # where <- sql_build_where(list(id = c(3L,4L,5L)))
-#' #
-#' # q <- glue::glue("SELECT * FROM SpectrumTable WHERE {where$condition}")
-#' # c <- DBI::dbSendQuery(db, q)
-#' # dbBind(c, where$vars)
-#' # dbFetch(c)
-#'
-#'
-#' #'
-#' #'
-#' get_length <- function(object) {
-#'   where <- sql_build_where(object@filter)
-#'   query <- sql_conditional_query("SELECT COUNT(*) AS cnt FROM SpectrumTable", where)
-#'   cat(deparse(where))
-#'   result <- DBI::dbSendQuery(db, query)
-#'   if(length(where$vars) > 0)
-#'     dbBind(result, where$vars)
-#'   res <- dbFetch(result)
-#'   dbClearResult(result)
-#'   res$cnt
-#' }
-#'
-#' be <- backendInitialize(
-#'   MsBackendMzVault(),
-#'   file = "inst/data/tiny-massbank.db"
-#'   )
-#' get_length(be)
-#'
-#' be@filter <- list(id = c(2L,3L,4L))
-#' get_length(be)
-#'
-#' sp <- Spectra("inst/data/tiny-massbank.db", source=MsBackendMzVault())
+get_default_spectravariables_mapping <- function(object)
+  list(
+    msLevel,
+    rtime = "RetentionTime",
+    acquisitionNum = "SpectrumId",
+    scanIndex = "ScanNumber",
+    #mz,
+    #intensity,
+    #dataStorage,
+    #dataOrigin,
+    centroided = constant(TRUE),
+    smoothed = constant(FALSE),
+    polarity = list(col = "Polarity", fun = mzvault_read_polarity),
+    precScanNum = "CompoundId",
+    precursorMz = "PrecursorMass",
+    precursorIntensity,
+    precursorCharge,
+    collisionEnergy,
+    isolationWindowLowerMz = list(
+      col = "PrecursorMass",
+      read_fun = ~ .x - object@implicitIsolationWidth / 2),
+    isolationWindowTargetMz = "PrecursorMass",
+    isolationWindowUpperMz = list(
+      col = "PrecursorMass",
+      read_fun = ~.x + object@implicitIsolationWidth / 2
+      )
+  )
+
+load_spectravariables_mapping <- function(
+    object,
+    mapping = get_default_spectravariables_mapping(object)) {
+  mapping_processed <-
+    purrr::map(
+      .x = mapping,
+      .f = function(entry) {
+        if(is.character(entry)) {
+          return(list(
+            col = entry,
+            read_fun = identity
+          ))
+        } else if(is.function(entry)) {
+          return(list(
+            col = "acquisitionNum",
+            read_fun = entry
+          ))
+        } else if(purrr::is_formula(entry)) {
+          return(list(
+            col = "acquisitionNum",
+            read_fun = purrr::as_mapper(entry)
+          ))
+        } else if(is.list(entry)) {
+          if(!("col" %in% names(entry))) {
+            stop("A mapping definition needs to define the source column with `col`")
+          }
+          if(!("read_fun" %in% names(entry))) {
+            stop("A mapping definition needs to define the transformation function with `read_fun`")
+          }
+          return(list(
+            col = entry$col,
+            read_fun = purrr::as_mapper(entry$read_fun)
+          ))
+        } else if(is.na(entry)) {
+          return(list(
+            col = "acquisitionNum",
+            read_fun = constant(NA)
+          ))
+        }
+      })
+  return(mapping_processed)
+}
+
+#' @export
+#' @describeIn spectravariables_mapping
+constant <- function(v) {
+  function(.x) rep(v, length(.x))
+}
+
+
+

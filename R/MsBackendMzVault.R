@@ -11,13 +11,18 @@ setClass("MsBackendMzVault",
          slots = c(
            file = "character",
            con = "SQLiteConnection",
-           filters = "list"
+           filters = "list",
+           implicitIsolationWidth = "numeric"
          ))
 
+#' @param file the mzVault SQLite library to load
+#' @param implicitIsolationWidth The assumed isolation width for precursor ions
 #' @importMethodsFrom Spectra backendInitialize
 setMethod("backendInitialize",
           "MsBackendMzVault",
-          function(object, file) {
+          function(object,
+                   file,
+                   implicitIsolationWidth = 1) {
             if(!fs::file_exists(file))
               stop("'file' needs to point to an mzVault library")
             object@file <- file
@@ -25,6 +30,7 @@ setMethod("backendInitialize",
               DBI::dbConnect(
                 RSQLite::SQLite(),
                 file)
+            object@implicitIsolationWidth <- implicitIsolationWidth
             validObject(object)
             object
           })
