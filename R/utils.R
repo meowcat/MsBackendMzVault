@@ -27,6 +27,12 @@ read_blobs <- function(blobs) {
   purrr::map(.x = blobs, .f = read_blob)
 }
 
+#' Read a NumericList from a list fo raw byte vectors
+read_blobs_numericlist <- function(blobs, compress = FALSE) {
+  purrr::map(.x = blobs, .f = read_blob) |>
+    IRanges::NumericList(compress = compress)
+}
+
 
 #' Write vectors of doubles to a list of raw byte vectors
 #'

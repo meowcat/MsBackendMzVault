@@ -59,6 +59,11 @@ test_that("reading blobs works", {
     data_parsed
   )
 
+  expect_equal(
+    read_blobs_numericlist(data_raw),
+    IRanges::NumericList(data_parsed, compress = FALSE)
+  )
+
 })
 
 test_that("writing blobs works", {
@@ -85,6 +90,12 @@ test_that("writing blobs works", {
 
   expect_equal(
     write_blobs(data_parsed),
+    data_raw
+  )
+
+  data_parsed_numericlist <- IRanges::NumericList(data_parsed)
+  expect_equal(
+    write_blobs(data_parsed_numericlist),
     data_raw
   )
 
