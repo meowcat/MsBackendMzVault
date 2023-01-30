@@ -55,7 +55,7 @@ get_filtered_spectrumtable_count <- function(object) {
 #'
 get_default_spectravariables_mapping <- function(object)
   list(
-    msLevel,
+    msLevel = constant(2),
     rtime = "RetentionTime",
     acquisitionNum = "SpectrumId",
     scanIndex = "ScanNumber",
@@ -73,7 +73,7 @@ get_default_spectravariables_mapping <- function(object)
     smoothed = constant(FALSE),
     polarity = list(
       col = "Polarity",
-      fun = mzvault_read_polarity
+      read_fun = mzvault_read_polarity
       ),
     precScanNum = "CompoundId",
     precursorMz = "PrecursorMass",

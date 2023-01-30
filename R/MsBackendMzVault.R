@@ -12,7 +12,8 @@ setClass("MsBackendMzVault",
            file = "character",
            con = "SQLiteConnection",
            filters = "list",
-           implicitIsolationWidth = "numeric"
+           implicitIsolationWidth = "numeric",
+           mapping = "list"
          ))
 
 #' @param file the mzVault SQLite library to load
@@ -31,6 +32,7 @@ setMethod("backendInitialize",
                 RSQLite::SQLite(),
                 file)
             object@implicitIsolationWidth <- implicitIsolationWidth
+            object@mapping <- load_spectravariables_mapping(object)
             validObject(object)
             object
           })
