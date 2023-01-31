@@ -101,3 +101,26 @@ setMethod("spectraData",
             tbl_s4df$intensity <- as(tbl_s4df$intensity, "NumericList")
             tbl_s4df
           })
+
+
+#' @importMethodsFrom Spectra peaksVariables
+setMethod("peaksVariables",
+          "MsBackendMzVault",
+          function(object) c("mz", "intensity")
+)
+
+
+#' @importMethodsFrom Spectra peaksData
+setMethod("peaksData",
+          "MsBackendMzVault",
+          function(object, columns = c("mz", "intensity")) {
+            undef_cols <- setdiff(columns, peaksVariables(object))
+            if(length(undef_cols) > 0)
+              stop("Not all selected peaksVariables are available for MsBackendMzVault")
+            spectraData(object, columns) |>
+              as_tibble() |>
+              purrr::pmap(
+                .f = function(...) matrix(c(...), ncol = ...length())
+              )
+          }
+)
