@@ -97,8 +97,10 @@ setMethod("spectraData",
 
             # Convert to S4Vectors::DataFrame
             tbl_s4df <- tbl_df |> as("DataFrame")
-            tbl_s4df$mz <- as(tbl_s4df$mz, "NumericList")
-            tbl_s4df$intensity <- as(tbl_s4df$intensity, "NumericList")
+            if("mz" %in% colnames(tbl_s4df))
+              tbl_s4df$mz <- as(tbl_s4df$mz, "NumericList")
+            if("intensity" %in% colnames(tbl_s4df))
+              tbl_s4df$intensity <- as(tbl_s4df$intensity, "NumericList")
             tbl_s4df
           })
 
