@@ -120,7 +120,9 @@ setMethod("peaksData",
             spectraData(object, columns) |>
               as_tibble() |>
               purrr::pmap(
-                .f = function(...) matrix(c(...), ncol = ...length())
+                .f = function(...)
+                  matrix(c(...), ncol = ...length()) |>
+                  magrittr::set_colnames(...names())
               )
           }
 )
