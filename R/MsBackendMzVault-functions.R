@@ -34,7 +34,7 @@ get_filtered_spectrumtable <- function(object, filters = object@filters) {
 join_compoundtable  <- function(tbl_spectrum, object) {
   tbl_compounds <- dplyr::tbl(object@con, "CompoundTable")
   tbl_joined <- tbl_spectrum |>
-    dplyr::left_join(tbl_compounds)
+    dplyr::left_join(tbl_compounds, by = "CompoundId")
   # print(tbl_joined |> dplyr::show_query())
   tbl_joined
 }
@@ -61,11 +61,11 @@ get_default_spectravariables_mapping <- function(object)
     scanIndex = "ScanNumber",
     mz = list(
       col = "blobMass",
-      read_fun = read_blobs_numericlist
+      read_fun = read_blobs
     ),
     intensity = list(
       col = "blobIntensity",
-      read_fun = read_blobs_numericlist
+      read_fun = read_blobs
     ),
     #dataStorage,
     #dataOrigin,
@@ -127,12 +127,12 @@ load_spectravariables_mapping <- function(
           ))
         } else if(is.function(entry)) {
           return(list(
-            col = "acquisitionNum",
+            col = "SpectrumId",
             read_fun = entry
           ))
         } else if(purrr::is_formula(entry)) {
           return(list(
-            col = "acquisitionNum",
+            col = "SpectrumId",
             read_fun = purrr::as_mapper(entry)
           ))
         } else if(is.list(entry)) {
@@ -148,7 +148,7 @@ load_spectravariables_mapping <- function(
           ))
         } else if(is.na(entry)) {
           return(list(
-            col = "acquisitionNum",
+            col = "SpectrumId",
             read_fun = constant(NA)
           ))
         }
