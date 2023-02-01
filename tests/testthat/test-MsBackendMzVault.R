@@ -93,6 +93,57 @@ test_that("spectraData gives expected results",  {
   #   3
   # )
 
+})
+
+
+test_that("Subsetting operator [ works", {
+
+  be <- backendInitialize(
+    MsBackendMzVault(),
+    file = system.file("data/tiny-massbank.db", package = "MsBackendMzVault")
+  )
+
+  selected_ids <- c(5,6,7,8,5,7,8,6,9)
+  be_sub <- be[selected_ids]
+
+  expect_equal(
+    be_sub$acquisitionNum,
+    selected_ids
+  )
+
+  # sub-subset based on index (should NOT return SpectrumID 2,4,5 but 6,8,5)
+  subselect_ids <- c(2,4,5)
+  subselected_ids <- selected_ids[subselect_ids]
+  be_subsub <- be_sub[subselect_ids]
+
+  expect_equal(
+    be_subsub$acquisitionNum,
+    subselected_ids
+  )
+
+  # sub-subset+duplicate based on index
+  subselect_ids <- c(5, 5, 2, 4, 5)
+  subselected_ids <- selected_ids[subselect_ids]
+  be_subsub <- be_sub[subselect_ids]
+
+  expect_equal(
+    be_subsub$acquisitionNum,
+    subselected_ids
+  )
+
+  # What happens if we select a spectrum outside of the range?
+  # Expecting an error
+  expect_error(be_sub[c(0,4)])
+  expect_error(be_sub[c(1,111)])
+
+  # subsetting by logical vector
+  # too short should fail
+  expect_error(be_sub[c(TRUE, TRUE, FALSE)])
+  be_sublogical <- be_sub[selected_ids < 8]
+  expect_equal(
+    be_sublogical$acquisitionNum,
+    selected_ids[selected_ids < 8]
+  )
 
 
 })

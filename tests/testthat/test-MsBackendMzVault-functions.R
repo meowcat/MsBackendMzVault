@@ -64,6 +64,22 @@ test_that("id filter works",  {
 })
 
 
+test_that("Getting SpectrumIds works",  {
+  be <- backendInitialize(
+    MsBackendMzVault(),
+    file = system.file("data/tiny-massbank.db", package = "MsBackendMzVault")
+  )
+
+  be@filters <- list(id = c(5,3,7,5,7))
+
+  expect_equal(
+    get_filtered_spectrumids(be),
+    c(5L, 3L, 7L, 5L, 7L)
+  )
+
+})
+
+
 test_that("Processing the column mapping works",  {
 
   # loading with an empty object should work if nothing in the mapping

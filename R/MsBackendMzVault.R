@@ -128,3 +128,32 @@ setMethod("peaksData",
               )
           }
 )
+
+
+# setMethod("$",
+#           "MsBackendMzVault",
+#           function(x, name) {
+#             spectraData(x, columns = name)[, 1L]
+#           })
+
+setMethod(`[`,
+          "MsBackendMzVault",
+          function(x, i, j, ..., drop=FALSE) {
+            if(!missing(j))
+              stop("Parameter j not supported")
+            if(...length() > 0)
+              stop("Parameters ... not supported")
+            if(drop)
+              stop("Parameter drop not supported")
+            i_ <- MsCoreUtils::i2index(i, length(x))
+            # If the spectrum is already subsetted, then subset based on
+            # the currently present SpectrumId
+            # (not based on a subset of the currently subsetted SpectrumIds,
+            # because further filters may have shifted this)
+            # Note: this clears all filtering done "softly" via SQL
+            current_ids <- get_filtered_spectrumids(x)
+            x@filters <- list(
+              id = current_ids[i]
+            )
+            x
+          })

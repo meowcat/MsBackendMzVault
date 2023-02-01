@@ -10,11 +10,15 @@ process_filter_to_predicate <- function(filter) {
   for(filter_name in names(filter)) {
     filter_data <- filter[[filter_name]]
     if(filter_name == "id") {
-      condition$id <- function(.x)
-        dplyr::right_join(
+      condition$id <- function(.x, object) {
+        id_filter <-
+          dplyr::tibble(SpectrumId = filter_data) %>%
+          dplyr::copy_to(object@con, ., temporary = TRUE, overwrite = TRUE)
+        dplyr::left_join(
+          id_filter,
           .x,
-          dplyr::tibble(SpectrumId = filter_data),
-          copy = TRUE)
+          by = "SpectrumId")
+      }
     }
   }
   condition
@@ -28,7 +32,7 @@ get_filtered_spectrumtable <- function(object, filters = object@filters) {
 
   filters_ |> purrr::reduce(
     .f = function(tbl_in, filter_step)
-      tbl_in %>% filter_step(),
+      tbl_in %>% filter_step(object),
     .init = tbl_spectrum
   )
 }
@@ -53,6 +57,12 @@ get_filtered_spectrumtable_count <- function(object) {
     dplyr::pull(n)
 }
 
+
+get_filtered_spectrumids <- function(object) {
+  object |>
+    get_filtered_spectrumtable() |>
+    dplyr::pull("SpectrumId")
+}
 
 #' Map spectraVariables to data from mzVault
 #'
