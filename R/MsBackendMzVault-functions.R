@@ -10,7 +10,11 @@ process_filter_to_predicate <- function(filter) {
   for(filter_name in names(filter)) {
     filter_data <- filter[[filter_name]]
     if(filter_name == "id") {
-      condition$id <- function(.x) dplyr::filter(.x, SpectrumId %in% filter_data)
+      condition$id <- function(.x)
+        dplyr::right_join(
+          .x,
+          dplyr::tibble(SpectrumId = filter_data),
+          copy = TRUE)
     }
   }
   condition

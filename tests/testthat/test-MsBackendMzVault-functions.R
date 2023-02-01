@@ -25,6 +25,45 @@ test_that("Counting records works with and without subsetting", {
 })
 
 
+test_that("id filter works",  {
+  be <- backendInitialize(
+    MsBackendMzVault(),
+    file = system.file("data/tiny-massbank.db", package = "MsBackendMzVault")
+  )
+  # without reordering or duplication
+  be@filters <- list(id = c(3,5,7))
+  st <- get_filtered_spectrumtable(be)
+  expect_equal(
+    st |> dplyr::pull(SpectrumId),
+    c(3L, 5L, 7L)
+  )
+
+  # reordering
+  be@filters <- list(id = c(3,7,5))
+  st <- get_filtered_spectrumtable(be)
+  expect_equal(
+    st |> dplyr::pull(SpectrumId),
+    c(3L, 7L, 5L)
+  )
+
+  # duplication
+  be@filters <- list(id = c(3,5,5,7))
+  st <- get_filtered_spectrumtable(be)
+  expect_equal(
+    st |> dplyr::pull(SpectrumId),
+    c(3L, 5L, 5L, 7L)
+  )
+
+  # reordering and duplication
+  be@filters <- list(id = c(5,3,7,5,7))
+  st <- get_filtered_spectrumtable(be)
+  expect_equal(
+    st |> dplyr::pull(SpectrumId),
+    c(5L, 3L, 7L, 5L, 7L)
+  )
+})
+
+
 test_that("Processing the column mapping works",  {
 
   # loading with an empty object should work if nothing in the mapping
