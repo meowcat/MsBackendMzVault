@@ -55,7 +55,7 @@ get_filtered_spectrumtable_count <- function(object) {
 #'
 get_default_spectravariables_mapping <- function(object)
   list(
-    msLevel = constant(2),
+    msLevel = constant(2L),
     rtime = "RetentionTime",
     acquisitionNum = "SpectrumId",
     scanIndex = "ScanNumber",
@@ -67,8 +67,8 @@ get_default_spectravariables_mapping <- function(object)
       col = "blobIntensity",
       read_fun = read_blobs
     ),
-    #dataStorage,
-    #dataOrigin,
+    dataStorage = constant(object@file),
+    dataOrigin = constant(object@file),
     centroided = constant(TRUE),
     smoothed = constant(FALSE),
     polarity = list(
@@ -77,8 +77,8 @@ get_default_spectravariables_mapping <- function(object)
       ),
     precScanNum = "CompoundId",
     precursorMz = "PrecursorMass",
-    precursorIntensity = NA,
-    precursorCharge = NA,
+    precursorIntensity = NA_real_,
+    precursorCharge = NA_integer_,
     collisionEnergy = list(
       col = "CollisionEnergy",
       read_fun = mzvault_read_collisionenergy
@@ -149,7 +149,8 @@ load_spectravariables_mapping <- function(
         } else if(is.na(entry)) {
           return(list(
             col = "SpectrumId",
-            read_fun = constant(NA)
+            read_fun = constant(entry) # note: not constant(NA) because we want
+            # to preserve the type, e.g. NA_integer_, NA_real_
           ))
         }
       })

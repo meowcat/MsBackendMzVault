@@ -30,3 +30,61 @@ test_that("Length works with and without subsetting", {
   )
 
 })
+
+test_that("spectraData gives expected results",  {
+  be <- backendInitialize(
+    MsBackendMzVault(),
+    file = system.file("data/tiny-massbank.db", package = "MsBackendMzVault")
+  )
+
+  # Full spectradata
+  sd_full <- spectraData(be)
+  sv_full <- spectraVariables(be)
+
+  expect_equal(
+    colnames(sd_full),
+    sv_full
+  )
+  expect_equal(
+    nrow(sd_full),
+    length(be)
+  )
+
+  # Subset of columns
+  sv_subset <- sv_full[c(1,4,7)]
+  sd_subset <- spectraData(be, columns = sv_subset)
+
+  expect_equal(
+    colnames(sd_subset),
+    sv_subset
+  )
+  expect_equal(
+    nrow(sd_subset),
+    length(be)
+  )
+
+  # coreSpectraVariables and their types
+  sv_core <- coreSpectraVariables()
+  sd_core <- spectraData(be, columns = names(sv_core))
+  expect_equal(
+    colnames(sd_core),
+    names(sv_core)
+  )
+
+  # check all column types
+  for(colname in names(sv_core))
+    expect_true(
+      is(sd_core[[colname]], sv_core[[colname]])
+    )
+
+
+  # be_small <- be[c(55,66,77)]
+  # sd_subset_small <- spectraData(be_small, columns = sv_subset)
+  # expect_equal(
+  #   nrow(sd_subset_small),
+  #   3
+  # )
+
+
+
+})

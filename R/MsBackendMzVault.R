@@ -87,11 +87,11 @@ setMethod("spectraData",
 
             # Apply specified read_fun to each column
             tbl_df <- tbl_filt |>
-              as_tibble() |>
-              mutate(
-                across(
+              dplyr::as_tibble() |>
+              dplyr::mutate(
+                dplyr::across(
                   names(mapping),
-                  ~ mapping[[cur_column()]]$read_fun(.x)
+                  ~ mapping[[dplyr::cur_column()]]$read_fun(.x)
               )
             )
 

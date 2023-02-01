@@ -68,7 +68,7 @@ test_that("Processing the column mapping works",  {
   # col
   expect_equal(
     processed_column_map$using_constant$col,
-    "acquisitionNum"
+    "SpectrumId"
   )
   # read_fun
   expect_equal(
@@ -80,7 +80,7 @@ test_that("Processing the column mapping works",  {
   # col
   expect_equal(
     processed_column_map$function_along_acquisitionNum$col,
-    "acquisitionNum"
+    "SpectrumId"
   )
   # read_fun
   expect_equal(
@@ -92,7 +92,7 @@ test_that("Processing the column mapping works",  {
   # col
   expect_equal(
     processed_column_map$constant_NA$col,
-    "acquisitionNum"
+    "SpectrumId"
   )
   # read_fun
   expect_equal(
