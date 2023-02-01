@@ -78,6 +78,14 @@ test_that("spectraData gives expected results",  {
     )
 
 
+  # check that calling nonexistent columns fails
+  sv_gugus <- c( names(sv_core)[1:5], "this_is_not_a_column", "that_is_not_a_column")
+  expect_error(spectraData(be, columns = sv_gugus))
+  sv_gugus <- c( names(sv_core)[1:5], "this_is_not_a_column")
+  expect_error(spectraData(be, columns = sv_gugus))
+  sv_gugus <- c("this_is_not_a_column")
+  expect_error(spectraData(be, columns = sv_gugus))
+
   # be_small <- be[c(55,66,77)]
   # sd_subset_small <- spectraData(be_small, columns = sv_subset)
   # expect_equal(
