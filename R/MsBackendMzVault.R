@@ -130,11 +130,11 @@ setMethod("peaksData",
 )
 
 
-# setMethod("$",
-#           "MsBackendMzVault",
-#           function(x, name) {
-#             spectraData(x, columns = name)[, 1L]
-#           })
+setMethod("$",
+          "MsBackendMzVault",
+          function(x, name) {
+            spectraData(x, columns = name)[, 1L]
+          })
 
 setMethod(`[`,
           "MsBackendMzVault",

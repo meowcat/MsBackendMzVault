@@ -147,3 +147,34 @@ test_that("Subsetting operator [ works", {
 
 
 })
+
+
+
+test_that("Operator $ works", {
+
+  be <- backendInitialize(
+    MsBackendMzVault(),
+    file = system.file("data/tiny-massbank.db", package = "MsBackendMzVault")
+  )
+
+  sd <- spectraData(be)
+
+  for(var in names(coreSpectraVariables())) {
+    expect_equal(
+      `$`(be, !!var),
+      sd[,var]
+      )
+  }
+
+  for(var in spectraVariables(be)) {
+    expect_equal(
+      `$`(be, !!var),
+      sd[,var]
+    )
+  }
+
+  expect_error(
+    be$hahaha_not_var
+  )
+
+})
