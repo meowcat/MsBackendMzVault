@@ -159,7 +159,6 @@ setMethod(`[`,
           })
 
 
-#' @importMethodsFrom Spectra lengths
 setMethod("lengths",
           "MsBackendMzVault",
           function(x, use.names = FALSE) {

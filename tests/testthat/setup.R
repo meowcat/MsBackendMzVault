@@ -22,5 +22,6 @@ be_with_zero_and_null <- function(be, to_zero = c(), to_null = c(),
   )
 
   be@con <- con
+
   be
 }

@@ -93,13 +93,38 @@ test_that("spectraData gives expected results",  {
   #   3
   # )
 
+
+
+
+})
+
+test_that("Handling null and zero values in mz fields works", {
+
+  be <- backendInitialize(
+    MsBackendMzVault(),
+    file = system.file("data/tiny-massbank.db", package = "MsBackendMzVault")
+  )
+
   # Spectra with NULL and zero-length mz entries
   be_zerolength <- be_with_zero_and_null(be, to_zero = c(2, 3))
   expect_no_error(spectraData(be_zerolength))
+  expect_equal(
+    be_zerolength[c(2,3)]$mz,
+    IRanges::NumericList(numeric(), numeric(), compress = FALSE)
+  )
+  expect_true(
+    all(lengths(be_zerolength[-c(2,3)]$mz) > 0)
+  )
 
   be_nulls <- be_with_zero_and_null(be, to_null = c(6,8))
   expect_no_error(spectraData(be_nulls))
-
+  expect_equal(
+    be_nulls[c(6,8)]$mz,
+    IRanges::NumericList(numeric(), numeric(), compress = FALSE)
+  )
+  expect_true(
+    all(lengths(be_nulls[-c(6,8)]$mz) > 0)
+  )
 
 })
 
