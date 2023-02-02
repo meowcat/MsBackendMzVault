@@ -2,8 +2,10 @@
 #' Read a vector of doubles from raw bytes
 #'
 read_blob <- function(blob) {
+  if(is.null(blob))
+    return(NULL)
   blob_con <- rawConnection(blob)
-  data <- readBin(blob_con, "numeric", n = length(blob) / 8)
+  data <- readBin(blob_con, "numeric", n = length(blob) %/% 8)
   close(blob_con)
   return(data)
 }
@@ -11,7 +13,7 @@ read_blob <- function(blob) {
 
 #' Get length (in decoded elements) for a blob
 #'
-length_blob <- function(blob) length(blob) / 8
+length_blob <- function(blob) length(blob) %/% 8
 
 
 #' Get lengths (in decoded elements) for a list of blobs

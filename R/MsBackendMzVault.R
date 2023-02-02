@@ -169,3 +169,11 @@ setMethod("lengths",
               dplyr::pull(blobMass) |>
               lengths_blob()
           })
+
+#' @importMethodsFrom Spectra isEmpty
+setMethod("isEmpty",
+          "MsBackendMzVault",
+          function(x) {
+            lengths(x) == 0
+          })
+

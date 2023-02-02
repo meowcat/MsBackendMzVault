@@ -93,6 +93,14 @@ test_that("spectraData gives expected results",  {
   #   3
   # )
 
+  # Spectra with NULL and zero-length mz entries
+  be_zerolength <- be_with_zero_and_null(be, to_zero = c(2, 3))
+  expect_no_error(spectraData(be_zerolength))
+
+  be_nulls <- be_with_zero_and_null(be, to_null = c(6,8))
+  expect_no_error(spectraData(be_nulls))
+
+
 })
 
 
@@ -201,6 +209,31 @@ test_that("lengths() works", {
   expect_equal(
     lengths(be_empty),
     integer()
+  )
+
+})
+
+
+test_that("isEmpty works",  {
+
+  be <- backendInitialize(
+    MsBackendMzVault(),
+    file = system.file("data/tiny-massbank.db", package = "MsBackendMzVault")
+  )
+
+  be_z <- be_with_zero_and_null(be, to_zero = 4, to_null = 2)
+
+  be_zz <- be_z[c(2,4)]
+
+  expect_equal(
+    isEmpty(be_zz),
+    c(TRUE, TRUE)
+  )
+
+  be_zx <- be_z[c(1,2,4,3)]
+  expect_equal(
+    isEmpty(be_zx),
+    c(FALSE, TRUE, TRUE, FALSE)
   )
 
 })
