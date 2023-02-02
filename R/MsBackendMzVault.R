@@ -157,3 +157,15 @@ setMethod(`[`,
             )
             x
           })
+
+
+#' @importMethodsFrom Spectra lengths
+setMethod("lengths",
+          "MsBackendMzVault",
+          function(x, use.names = FALSE) {
+            if(use.names & !is.null(names(x)))
+              stop("MsBackendMzVault does not support names")
+            get_filtered_spectrumtable(x) |>
+              dplyr::pull(blobMass) |>
+              lengths_blob()
+          })

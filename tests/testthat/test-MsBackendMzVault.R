@@ -178,3 +178,29 @@ test_that("Operator $ works", {
   )
 
 })
+
+test_that("lengths() works", {
+
+  be <- backendInitialize(
+    MsBackendMzVault(),
+    file = system.file("data/tiny-massbank.db", package = "MsBackendMzVault")
+  )
+
+  expect_equal(
+    lengths(be),
+    be$mz |> purrr::map_int(length)
+  )
+
+  be_sub <- be[c(66,55,44)]
+  expect_equal(
+    lengths(be_sub),
+    be_sub$mz |> purrr::map_int(length)
+  )
+
+  be_empty <- be[c()]
+  expect_equal(
+    lengths(be_empty),
+    integer()
+  )
+
+})
