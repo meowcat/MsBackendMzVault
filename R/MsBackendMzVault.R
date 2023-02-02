@@ -176,3 +176,56 @@ setMethod("isEmpty",
             lengths(x) == 0
           })
 
+
+
+accessorMethods <- c(
+  "acquisitionNum", "centroided", "collisionEnergy", "dataOrigin",
+  "intensity", "isolationWindowLowerMz", "isolationWindowTargetMz",
+  "isolationWindowUpperMz", "msLevel", "mz" ,"polarity", "precScanNum",
+  "precursorCharge", "precursorIntensity", "precursorMz", "rtime",
+  "scanIndex", "smoothed")
+#' @importMethodsFrom Spectra acquisitionNum
+#' @importMethodsFrom Spectra centroided
+#' @importMethodsFrom Spectra collisionEnergy
+#' @importMethodsFrom Spectra dataOrigin
+#' @importMethodsFrom Spectra intensity
+#' @importMethodsFrom Spectra isolationWindowLowerMz
+#' @importMethodsFrom Spectra isolationWindowTargetMz
+#' @importMethodsFrom Spectra isolationWindowUpperMz
+#' @importMethodsFrom Spectra msLevel
+#' @importMethodsFrom Spectra mz
+#' @importMethodsFrom Spectra polarity
+#' @importMethodsFrom Spectra precScanNum
+#' @importMethodsFrom Spectra precursorCharge
+#' @importMethodsFrom Spectra precursorIntensity
+#' @importMethodsFrom Spectra precursorMz
+#' @importMethodsFrom Spectra rtime
+#' @importMethodsFrom Spectra scanIndex
+#' @importMethodsFrom Spectra smoothed
+#'
+#'
+#'
+accessorMethod <- function(mthd)
+  function(object) {
+    spectraData(object, columns = mthd)[, 1L]
+  }
+setMethod("acquisitionNum", "MsBackendMzVault", accessorMethod("acquisitionNum"))
+setMethod("centroided", "MsBackendMzVault", accessorMethod("centroided"))
+setMethod("collisionEnergy", "MsBackendMzVault", accessorMethod("collisionEnergy"))
+setMethod("dataOrigin", "MsBackendMzVault", accessorMethod("dataOrigin"))
+setMethod("intensity", "MsBackendMzVault", accessorMethod("intensity"))
+setMethod("isolationWindowLowerMz", "MsBackendMzVault", accessorMethod("isolationWindowLowerMz"))
+setMethod("isolationWindowTargetMz", "MsBackendMzVault", accessorMethod("isolationWindowTargetMz"))
+setMethod("isolationWindowUpperMz", "MsBackendMzVault", accessorMethod("isolationWindowUpperMz"))
+setMethod("msLevel", "MsBackendMzVault", accessorMethod("msLevel"))
+setMethod("mz", "MsBackendMzVault", accessorMethod("mz"))
+setMethod("polarity", "MsBackendMzVault", accessorMethod("polarity"))
+setMethod("precScanNum", "MsBackendMzVault", accessorMethod("precScanNum"))
+setMethod("precursorCharge", "MsBackendMzVault", accessorMethod("precursorCharge"))
+setMethod("precursorIntensity", "MsBackendMzVault", accessorMethod("precursorIntensity"))
+setMethod("precursorMz", "MsBackendMzVault", accessorMethod("precursorMz"))
+setMethod("rtime", "MsBackendMzVault", accessorMethod("rtime"))
+setMethod("scanIndex", "MsBackendMzVault", accessorMethod("scanIndex"))
+setMethod("smoothed", "MsBackendMzVault", accessorMethod("smoothed"))
+
+

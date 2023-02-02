@@ -262,3 +262,29 @@ test_that("isEmpty works",  {
   )
 
 })
+
+
+test_that("bulk accessor methods work", {
+
+  be <- backendInitialize(
+    MsBackendMzVault(),
+    file = system.file("data/tiny-massbank.db", package = "MsBackendMzVault")
+  )
+
+  accessorMethods <- c(
+    "acquisitionNum", "centroided", "collisionEnergy", "dataOrigin",
+    "intensity", "isolationWindowLowerMz", "isolationWindowTargetMz",
+    "isolationWindowUpperMz", "msLevel", "mz" ,"polarity", "precScanNum",
+    "precursorCharge", "precursorIntensity", "precursorMz", "rtime",
+    "scanIndex", "smoothed")
+  sd <- spectraData(be)
+
+  for(method in accessorMethods) {
+    expect_equal(
+      do.call(method, list(be)),
+      sd[, method]
+    )
+
+  }
+
+})
