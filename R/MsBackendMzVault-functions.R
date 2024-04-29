@@ -227,3 +227,14 @@ fast_replace_nan <- function(data, replace = NA) {
   data[is.nan(data)] <- replace
   data
 }
+
+#' Get database connection
+#'
+#' @importFrom DBI dbIsValid
+get_db_con <- function(object) {
+  if(dbIsValid(object@con))
+    return(con)
+  DBI::dbConnect(
+    RSQLite::SQLite(),
+    object@file)
+}

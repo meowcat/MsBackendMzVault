@@ -27,10 +27,7 @@ setMethod("backendInitialize",
             if(!fs::file_exists(file))
               stop("'file' needs to point to an mzVault library")
             object@file <- file
-            object@con <-
-              DBI::dbConnect(
-                RSQLite::SQLite(),
-                file)
+            object@con <- get_db_con(object)
             object@implicitIsolationWidth <- implicitIsolationWidth
             object@mapping <- load_spectravariables_mapping(object)
             validObject(object)
