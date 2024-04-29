@@ -7,7 +7,7 @@ test_that("Counting records works with and without subsetting", {
 
   be <- backendInitialize(
     MsBackendMzVault(),
-    file = system.file("data/tiny-massbank.db", package = "MsBackendMzVault")
+    file = system.file("test-data/tiny-massbank.db", package = "MsBackendMzVault")
   )
 
   expect_equal(
@@ -28,7 +28,7 @@ test_that("Counting records works with and without subsetting", {
 test_that("id filter works",  {
   be <- backendInitialize(
     MsBackendMzVault(),
-    file = system.file("data/tiny-massbank.db", package = "MsBackendMzVault")
+    file = system.file("test-data/tiny-massbank.db", package = "MsBackendMzVault")
   )
   # without reordering or duplication
   be@filters <- list(id = c(3,5,7))
@@ -67,7 +67,7 @@ test_that("id filter works",  {
 test_that("Getting SpectrumIds works",  {
   be <- backendInitialize(
     MsBackendMzVault(),
-    file = system.file("data/tiny-massbank.db", package = "MsBackendMzVault")
+    file = system.file("test-data/tiny-massbank.db", package = "MsBackendMzVault")
   )
 
   be@filters <- list(id = c(5,3,7,5,7))

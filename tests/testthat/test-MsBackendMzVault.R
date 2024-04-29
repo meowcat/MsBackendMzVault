@@ -3,7 +3,7 @@ test_that("Loading an mzVault library works", {
 
   be <- backendInitialize(
     MsBackendMzVault(),
-    file = system.file("data/tiny-massbank.db", package = "MsBackendMzVault")
+    file = system.file("test-data/tiny-massbank.db", package = "MsBackendMzVault")
   )
   expect_true(validObject(be))
 
@@ -14,7 +14,7 @@ test_that("Length works with and without subsetting", {
 
   be <- backendInitialize(
     MsBackendMzVault(),
-    file = system.file("data/tiny-massbank.db", package = "MsBackendMzVault")
+    file = system.file("test-data/tiny-massbank.db", package = "MsBackendMzVault")
   )
 
   expect_equal(
@@ -34,7 +34,7 @@ test_that("Length works with and without subsetting", {
 test_that("spectraData gives expected results",  {
   be <- backendInitialize(
     MsBackendMzVault(),
-    file = system.file("data/tiny-massbank.db", package = "MsBackendMzVault")
+    file = system.file("test-data/tiny-massbank.db", package = "MsBackendMzVault")
   )
 
   # Full spectradata
@@ -102,7 +102,7 @@ test_that("Handling null and zero values in mz fields works", {
 
   be <- backendInitialize(
     MsBackendMzVault(),
-    file = system.file("data/tiny-massbank.db", package = "MsBackendMzVault")
+    file = system.file("test-data/tiny-massbank.db", package = "MsBackendMzVault")
   )
 
   # Spectra with NULL and zero-length mz entries
@@ -133,7 +133,7 @@ test_that("Subsetting operator [ works", {
 
   be <- backendInitialize(
     MsBackendMzVault(),
-    file = system.file("data/tiny-massbank.db", package = "MsBackendMzVault")
+    file = system.file("test-data/tiny-massbank.db", package = "MsBackendMzVault")
   )
 
   selected_ids <- c(5,6,7,8,5,7,8,6,9)
@@ -187,7 +187,7 @@ test_that("Operator $ works", {
 
   be <- backendInitialize(
     MsBackendMzVault(),
-    file = system.file("data/tiny-massbank.db", package = "MsBackendMzVault")
+    file = system.file("test-data/tiny-massbank.db", package = "MsBackendMzVault")
   )
 
   sd <- spectraData(be)
@@ -216,7 +216,7 @@ test_that("lengths() works", {
 
   be <- backendInitialize(
     MsBackendMzVault(),
-    file = system.file("data/tiny-massbank.db", package = "MsBackendMzVault")
+    file = system.file("test-data/tiny-massbank.db", package = "MsBackendMzVault")
   )
 
   expect_equal(
@@ -243,7 +243,7 @@ test_that("isEmpty works",  {
 
   be <- backendInitialize(
     MsBackendMzVault(),
-    file = system.file("data/tiny-massbank.db", package = "MsBackendMzVault")
+    file = system.file("test-data/tiny-massbank.db", package = "MsBackendMzVault")
   )
 
   be_z <- be_with_zero_and_null(be, to_zero = 4, to_null = 2)
@@ -268,7 +268,7 @@ test_that("bulk accessor methods work", {
 
   be <- backendInitialize(
     MsBackendMzVault(),
-    file = system.file("data/tiny-massbank.db", package = "MsBackendMzVault")
+    file = system.file("test-data/tiny-massbank.db", package = "MsBackendMzVault")
   )
 
   accessorMethods <- c(
