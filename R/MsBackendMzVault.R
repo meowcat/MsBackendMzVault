@@ -17,7 +17,7 @@ setClass("MsBackendMzVault",
          ))
 
 #' Initialize a `MsBackendMzVault`
-#' 
+#'
 #' @param object a `MsBackendMzVault` object
 #' @param file the mzVault SQLite library to load
 #' @param implicitIsolationWidth The assumed isolation width for precursor ions
@@ -47,7 +47,7 @@ setMethod("length",
 
 #' Report data storage to be the source SQLite database
 #' @importMethodsFrom Spectra dataStorage
-#' 
+#'
 #' @param object a `MsBackendMzVault` object
 setMethod("dataStorage",
           "MsBackendMzVault",
@@ -55,6 +55,9 @@ setMethod("dataStorage",
             rep(object@file, length(object))
           })
 
+#' Constructor for MsBackendMzVault
+#'
+#' @export
 MsBackendMzVault <- function() {
   new("MsBackendMzVault")
 }
@@ -134,7 +137,7 @@ setMethod("peaksData",
 )
 
 #' Access spectraData columns by name
-#' 
+#'
 #' @param x a `MsBackendMzVault` object
 #' @param name the name of the column
 #' @importMethodsFrom Spectra $
@@ -145,7 +148,7 @@ setMethod("$",
           })
 
 #' Subsetting by index
-#' 
+#'
 #' @param x a `MsBackendMzVault` object
 #' @param i Indices
 #' @param j Not supported
@@ -192,6 +195,12 @@ setMethod("isEmpty",
             lengths(x) == 0
           })
 
+#' @importMethodsFrom Spectra tic
+setMethod("tic",
+          "MsBackendMzVault",
+          function(object) {
+            intensity(object) |> purrr::map_dbl(sum)
+          })
 
 
 accessorMethods <- c(

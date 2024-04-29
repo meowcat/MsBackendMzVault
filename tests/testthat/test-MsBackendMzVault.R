@@ -264,6 +264,32 @@ test_that("isEmpty works",  {
 })
 
 
+test_that("tic works",  {
+
+  be <- backendInitialize(
+    MsBackendMzVault(),
+    file = system.file("test-data/tiny-massbank.db", package = "MsBackendMzVault")
+  )
+
+  be_z <- be_with_zero_and_null(be, to_zero = 4, to_null = 2)
+  be_zz <- be_with_zero_and_null(be, to_zero = 4, to_null = 2, col = "blobIntensity")
+
+  be_zzz <- be_zz[c(2,4)]
+
+  expect_equal(
+    tic(be_zzz),
+    c(0, 0)
+  )
+
+  be_zx <- be_z[c(1,2,4,3)]
+  expect_equal(
+    tic(be_zx),
+    c(188108, 56568, 30880, 57784)
+  )
+
+})
+
+
 test_that("bulk accessor methods work", {
 
   be <- backendInitialize(
