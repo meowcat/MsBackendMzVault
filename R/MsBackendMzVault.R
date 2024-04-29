@@ -16,6 +16,9 @@ setClass("MsBackendMzVault",
            mapping = "list"
          ))
 
+#' Initialize a `MsBackendMzVault`
+#'
+#' @param object a `MsBackendMzVault` object
 #' @param file the mzVault SQLite library to load
 #' @param implicitIsolationWidth The assumed isolation width for precursor ions
 #' @importMethodsFrom Spectra backendInitialize
@@ -27,16 +30,15 @@ setMethod("backendInitialize",
             if(!fs::file_exists(file))
               stop("'file' needs to point to an mzVault library")
             object@file <- file
-            object@con <-
-              DBI::dbConnect(
-                RSQLite::SQLite(),
-                file)
+            object@con <- get_db_con(object)
             object@implicitIsolationWidth <- implicitIsolationWidth
             object@mapping <- load_spectravariables_mapping(object)
             validObject(object)
             object
           })
 
+#' Get number of spectra in the filtered object
+#' @param x a `MsBackendMzVault` object
 setMethod("length",
           "MsBackendMzVault",
           function(x) {
@@ -45,12 +47,17 @@ setMethod("length",
 
 #' Report data storage to be the source SQLite database
 #' @importMethodsFrom Spectra dataStorage
+#'
+#' @param object a `MsBackendMzVault` object
 setMethod("dataStorage",
           "MsBackendMzVault",
           function(object) {
             rep(object@file, length(object))
           })
 
+#' Constructor for MsBackendMzVault
+#'
+#' @export
 MsBackendMzVault <- function() {
   new("MsBackendMzVault")
 }
@@ -128,3 +135,122 @@ setMethod("peaksData",
               )
           }
 )
+
+#' Access spectraData columns by name
+#'
+#' @param x a `MsBackendMzVault` object
+#' @param name the name of the column
+#' @importMethodsFrom Spectra $
+setMethod("$",
+          "MsBackendMzVault",
+          function(x, name) {
+            spectraData(x, columns = name)[, 1L]
+          })
+
+#' Subsetting by index
+#'
+#' @param x a `MsBackendMzVault` object
+#' @param i Indices
+#' @param j Not supported
+#' @param ... Not supported additional parameters
+#' @param drop Not supported
+#'  @importMethodsFrom Spectra [
+setMethod(`[`,
+          "MsBackendMzVault",
+          function(x, i, j, ..., drop=FALSE) {
+            if(!missing(j))
+              stop("Parameter j not supported")
+            if(...length() > 0)
+              stop("Parameters ... not supported")
+            if(drop)
+              stop("Parameter drop not supported")
+            i_ <- MsCoreUtils::i2index(i, length(x))
+            # If the spectrum is already subsetted, then subset based on
+            # the currently present SpectrumId
+            # (not based on a subset of the currently subsetted SpectrumIds,
+            # because further filters may have shifted this)
+            # Note: this clears all filtering done "softly" via SQL
+            current_ids <- get_filtered_spectrumids(x)
+            x@filters <- list(
+              id = current_ids[i]
+            )
+            x
+          })
+
+
+setMethod("lengths",
+          "MsBackendMzVault",
+          function(x, use.names = FALSE) {
+            if(use.names & !is.null(names(x)))
+              stop("MsBackendMzVault does not support names")
+            get_filtered_spectrumtable(x) |>
+              dplyr::pull(blobMass) |>
+              lengths_blob()
+          })
+
+#' @importMethodsFrom Spectra isEmpty
+setMethod("isEmpty",
+          "MsBackendMzVault",
+          function(x) {
+            lengths(x) == 0
+          })
+
+#' @importMethodsFrom Spectra tic
+setMethod("tic",
+          "MsBackendMzVault",
+          function(object) {
+            intensity(object) |> purrr::map_dbl(sum)
+          })
+
+
+accessorMethods <- c(
+  "acquisitionNum", "centroided", "collisionEnergy", "dataOrigin",
+  "intensity", "isolationWindowLowerMz", "isolationWindowTargetMz",
+  "isolationWindowUpperMz", "msLevel", "mz" ,"polarity", "precScanNum",
+  "precursorCharge", "precursorIntensity", "precursorMz", "rtime",
+  "scanIndex", "smoothed")
+#' @importMethodsFrom Spectra acquisitionNum
+#' @importMethodsFrom Spectra centroided
+#' @importMethodsFrom Spectra collisionEnergy
+#' @importMethodsFrom Spectra dataOrigin
+#' @importMethodsFrom Spectra intensity
+#' @importMethodsFrom Spectra isolationWindowLowerMz
+#' @importMethodsFrom Spectra isolationWindowTargetMz
+#' @importMethodsFrom Spectra isolationWindowUpperMz
+#' @importMethodsFrom Spectra msLevel
+#' @importMethodsFrom Spectra mz
+#' @importMethodsFrom Spectra polarity
+#' @importMethodsFrom Spectra precScanNum
+#' @importMethodsFrom Spectra precursorCharge
+#' @importMethodsFrom Spectra precursorIntensity
+#' @importMethodsFrom Spectra precursorMz
+#' @importMethodsFrom Spectra rtime
+#' @importMethodsFrom Spectra scanIndex
+#' @importMethodsFrom Spectra smoothed
+#'
+#'
+#'
+accessorMethod <- function(mthd)
+  function(object) {
+    spectraData(object, columns = mthd)[, 1L]
+  }
+setMethod("acquisitionNum", "MsBackendMzVault", accessorMethod("acquisitionNum"))
+setMethod("centroided", "MsBackendMzVault", accessorMethod("centroided"))
+setMethod("collisionEnergy", "MsBackendMzVault", accessorMethod("collisionEnergy"))
+setMethod("dataOrigin", "MsBackendMzVault", accessorMethod("dataOrigin"))
+setMethod("intensity", "MsBackendMzVault", accessorMethod("intensity"))
+setMethod("isolationWindowLowerMz", "MsBackendMzVault", accessorMethod("isolationWindowLowerMz"))
+setMethod("isolationWindowTargetMz", "MsBackendMzVault", accessorMethod("isolationWindowTargetMz"))
+setMethod("isolationWindowUpperMz", "MsBackendMzVault", accessorMethod("isolationWindowUpperMz"))
+setMethod("msLevel", "MsBackendMzVault", accessorMethod("msLevel"))
+setMethod("mz", "MsBackendMzVault", accessorMethod("mz"))
+setMethod("polarity", "MsBackendMzVault", accessorMethod("polarity"))
+setMethod("precScanNum", "MsBackendMzVault", accessorMethod("precScanNum"))
+setMethod("precursorCharge", "MsBackendMzVault", accessorMethod("precursorCharge"))
+setMethod("precursorIntensity", "MsBackendMzVault", accessorMethod("precursorIntensity"))
+setMethod("precursorMz", "MsBackendMzVault", accessorMethod("precursorMz"))
+setMethod("rtime", "MsBackendMzVault", accessorMethod("rtime"))
+setMethod("scanIndex", "MsBackendMzVault", accessorMethod("scanIndex"))
+setMethod("smoothed", "MsBackendMzVault", accessorMethod("smoothed"))
+
+

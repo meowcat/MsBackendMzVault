@@ -5,12 +5,21 @@
 #' Converts the parameters set in a backend's filter
 #' to dplyr predicates to be applied with reduce().
 #'
+#' @param filter  a list of filter statements to be processed
 process_filter_to_predicate <- function(filter) {
   condition <- list()
   for(filter_name in names(filter)) {
     filter_data <- filter[[filter_name]]
     if(filter_name == "id") {
-      condition$id <- function(.x) dplyr::filter(.x, SpectrumId %in% filter_data)
+      condition$id <- function(.x, object) {
+        id_filter <-
+          dplyr::tibble(SpectrumId = filter_data) %>%
+          dplyr::copy_to(object@con, ., temporary = TRUE, overwrite = TRUE)
+        dplyr::left_join(
+          id_filter,
+          .x,
+          by = "SpectrumId")
+      }
     }
   }
   condition
@@ -18,19 +27,24 @@ process_filter_to_predicate <- function(filter) {
 
 #' Get SpectrumTable filtered by specified predicates
 #'
+#' @param object  a MsBackendMzVault object
+#' @param filters  a list of filters to filter the table by. Where are the predicates documented?
 get_filtered_spectrumtable <- function(object, filters = object@filters) {
   filters_ <- process_filter_to_predicate(filters)
   tbl_spectrum <- dplyr::tbl(object@con, "SpectrumTable")
 
   filters_ |> purrr::reduce(
     .f = function(tbl_in, filter_step)
-      tbl_in %>% filter_step(),
+      tbl_in %>% filter_step(object),
     .init = tbl_spectrum
   )
 }
 
 
 #' Extend SpectrumTable by CompoundTable data
+#' 
+#' @param tbl_spectrum  a SpectrumTables
+#' @param object  a MsBackendMzVault object to load compound data from
 join_compoundtable  <- function(tbl_spectrum, object) {
   tbl_compounds <- dplyr::tbl(object@con, "CompoundTable")
   tbl_joined <- tbl_spectrum |>
@@ -41,6 +55,8 @@ join_compoundtable  <- function(tbl_spectrum, object) {
 
 
 #' Get number of rows in filtered SpectrumTable
+#' 
+#' @param object  a MsBackendMzVault object
 #'
 get_filtered_spectrumtable_count <- function(object) {
   object |>
@@ -50,7 +66,15 @@ get_filtered_spectrumtable_count <- function(object) {
 }
 
 
+get_filtered_spectrumids <- function(object) {
+  object |>
+    get_filtered_spectrumtable() |>
+    dplyr::pull("SpectrumId")
+}
+
 #' Map spectraVariables to data from mzVault
+#' 
+#' @param object  a MsBackendMzVault object
 #'
 #'
 get_default_spectravariables_mapping <- function(object)
@@ -96,8 +120,10 @@ get_default_spectravariables_mapping <- function(object)
 #' Load a spectraVariables mapping
 #'
 #' Loads a spectraVariables mapping definition and transforms shorthand notation
-#' into full definition. A mapping definition is a list, and for each element:
+#' into full definition.
 #'
+#' @param object a MsBackendMzVault object
+#' @param mapping a list of definitions to transform database fields to SpectraVariables
 #' * the name is the spectraVariable to be assigned
 #' * the value is a list with elements `list(col = "", fun = identity)`
 #'   where `col` is the source column and `read_fun` is a function transforming
@@ -157,8 +183,12 @@ load_spectravariables_mapping <- function(
   return(mapping_processed)
 }
 
+#' Constant value for field mapping
+#' 
 #' @export
-#' @describeIn load_spectravariables_mapping
+#' 
+#' 
+#' @param v a constant value to fill the field with
 constant <- function(v) {
   function(.x) rep(v, length(.x))
 }
@@ -167,6 +197,8 @@ constant <- function(v) {
 #'
 #' Extract any number from the `CollisionEnergy` text field.
 #' If multiple are found, they are averaged (e.g. for "Ramp 33.3-44-4 eV")
+#' 
+#' @param x a collisionEnergy field to parse
 mzvault_read_collisionenergy <- function(x) {
   stringr::str_match_all(x, "([0-9.]+)") |>
     purrr::map(~ .x[,2]) |>
@@ -176,6 +208,8 @@ mzvault_read_collisionenergy <- function(x) {
 }
 
 #' Read polarity from mzVault field
+#' 
+#' @param x a polarity field  
 mzvault_read_polarity <- function(x) {
   positive_tags <- c(
     "P", "p", "POSITIVE", "+", "1", "positive", "POS", "pos"
@@ -194,17 +228,17 @@ mzvault_read_polarity <- function(x) {
 
 #' Replace NaN
 #'
-#' @param x
-#' @param y replacement, typically `NA`
+#' @param data the data
+#' @param replace the replacement, typically `NA`
 #'
-#' @return
+#' @return data with replacement
 #' @export
 #'
 #' @examples
 #'
-# x1 <- c(1,2,NaN,3,4)
-#
-# y1 <- fast_replace_nan(x1)
+#' x1 <- c(1,2,NaN,3,4)
+#'
+#' y1 <- fast_replace_nan(x1)
 #'
 #'
 fast_replace_nan <- function(data, replace = NA) {
@@ -212,4 +246,16 @@ fast_replace_nan <- function(data, replace = NA) {
   stopifnot(is.numeric(data))
   data[is.nan(data)] <- replace
   data
+}
+
+#' Get database connection
+#'
+#' @param object a `MsBackendMzVault` object
+#' @importFrom DBI dbIsValid
+get_db_con <- function(object) {
+  if(dbIsValid(object@con))
+    return(con)
+  DBI::dbConnect(
+    RSQLite::SQLite(),
+    object@file)
 }
