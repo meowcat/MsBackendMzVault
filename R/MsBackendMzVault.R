@@ -37,6 +37,8 @@ setMethod("backendInitialize",
             object
           })
 
+#' Get number of spectra in the filtered object
+#' @param x a `MsBackendMzVault` object
 setMethod("length",
           "MsBackendMzVault",
           function(x) {
@@ -131,6 +133,10 @@ setMethod("peaksData",
           }
 )
 
+#' Access spectraData columns by name
+#' 
+#' @param x a `MsBackendMzVault` object
+#' @param name the name of the column
 #' @importMethodsFrom Spectra $
 setMethod("$",
           "MsBackendMzVault",
@@ -138,7 +144,14 @@ setMethod("$",
             spectraData(x, columns = name)[, 1L]
           })
 
-#' @importMethodsFrom Spectra [
+#' Subsetting by index
+#' 
+#' @param x a `MsBackendMzVault` object
+#' @param i Indices
+#' @param j Not supported
+#' @param ... Not supported additional parameters
+#' @param drop Not supported
+#'  @importMethodsFrom Spectra [
 setMethod(`[`,
           "MsBackendMzVault",
           function(x, i, j, ..., drop=FALSE) {
