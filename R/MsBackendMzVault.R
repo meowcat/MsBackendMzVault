@@ -16,6 +16,9 @@ setClass("MsBackendMzVault",
            mapping = "list"
          ))
 
+#' Initialize a `MsBackendMzVault`
+#' 
+#' @param object a `MsBackendMzVault` object
 #' @param file the mzVault SQLite library to load
 #' @param implicitIsolationWidth The assumed isolation width for precursor ions
 #' @importMethodsFrom Spectra backendInitialize
@@ -42,6 +45,8 @@ setMethod("length",
 
 #' Report data storage to be the source SQLite database
 #' @importMethodsFrom Spectra dataStorage
+#' 
+#' @param object a `MsBackendMzVault` object
 setMethod("dataStorage",
           "MsBackendMzVault",
           function(object) {
@@ -126,13 +131,14 @@ setMethod("peaksData",
           }
 )
 
-
+#' @importMethodsFrom Spectra $
 setMethod("$",
           "MsBackendMzVault",
           function(x, name) {
             spectraData(x, columns = name)[, 1L]
           })
 
+#' @importMethodsFrom Spectra [
 setMethod(`[`,
           "MsBackendMzVault",
           function(x, i, j, ..., drop=FALSE) {
