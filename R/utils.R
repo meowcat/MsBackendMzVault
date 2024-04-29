@@ -39,6 +39,8 @@ read_blobs <- function(blobs) {
 }
 
 #' Read a NumericList from a list fo raw byte vectors
+#'
+#' @importFrom IRanges NumericList
 read_blobs_numericlist <- function(blobs, compress = FALSE) {
   purrr::map(.x = blobs, .f = read_blob) |>
     IRanges::NumericList(compress = compress)

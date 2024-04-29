@@ -3,6 +3,8 @@ library(Spectra)
 library(MsBackendMzVault)
 
 #' Generate a backend with zeroed and nulled values for testing
+#'
+#' @importFrom glue glue
 be_with_zero_and_null <- function(be, to_zero = c(), to_null = c(),
                                   col = "blobMass") {
   # Copy to a memory DB and empty some spectra
